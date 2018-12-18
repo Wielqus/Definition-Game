@@ -1,0 +1,78 @@
+<div id="definitiongame" class="ui  segment">
+    <header id="definitiongame-header" class="ui segment">Read definition and try to ask<span style="float:right">Points:{{points}}</span></header>
+    <div  class="description">
+        {{description}}
+    </div>
+    <div class="ui buttons">
+        <button v-on:click="check" v-for="ansver in randomAnsvers" v-bind:data-ansver="ansver.true"  class="ui ansver-button button">{{ansver.name}}</button>        
+    </div>
+    <footer id="definitiongame-footer" class="ui segment"><span>English4IT</span><button id="definitiongame-next-button"  class="ui right floated primary button" v-on:click="loadData">Next</button>
+        <div style="clear:both;"></div>
+    </footer>
+</div>
+
+<script>
+
+    const definitiongame = new Vue({
+        el: '#definitiongame',
+        data: {
+            error: null,
+            description: null,
+            ansvers: [],
+            points: 0
+        },
+        computed: {
+            randomAnsvers: function () {
+                return this.ansvers.sort(function () {
+                    return 0.5 - Math.random()
+                });
+            }
+        },
+        created: function () {
+            this.init();
+        },
+        methods: {
+            check: function (event) {
+                target = event.currentTarget
+                ansver = target.getAttribute("data-ansver");
+                if (ansver == 1)
+                {
+                    $(target).addClass("positive")
+                    this.points++;
+                } else
+                    $(target).addClass("negative")
+                $(".ansver-button").prop('disabled', true);
+            },
+            init: function () {
+                this.loadData();
+            },
+            loadData: function () {
+                $(".ansver-button").prop('disabled', false);
+                $(".ansver-button").removeClass("positive");
+                $(".ansver-button").removeClass("negative");
+                $.ajax({
+                    url: '/index/load',
+                    method: 'POST',
+                    dataType: "json",
+                    data: {},
+                    beforeSend: function () {
+                        $("#definitiongame").addClass("loading");
+                    },
+                    success: function (data) {
+                        definitiongame.description = data.description;
+                        definitiongame.ansvers = data.ansvers;
+                        $("#definitiongame").removeClass("loading");
+                    },
+                    error: function (error) {
+                        definitiongame.error = "Something goes wrong";
+                        $("#definitiongame").removeClass("loading");
+                    },
+                });
+            }
+
+
+        }
+
+    });
+
+</script>
